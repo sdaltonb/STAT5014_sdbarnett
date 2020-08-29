@@ -1,0 +1,37 @@
+---
+title: "HW1"
+author: "Steven Barnett"
+date: "8/29/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem 2
+
+## Part A
+
+I graduated in April of 2016 from Brigham Young University with a bachelor's degree in computer science. I have worked as a software engineer at Qualtrics for the past four years. Because of this experience I am confident in my coding ability in several different languages and frameworks. However, I have limited expertise in statistical analysis and the required computational tools to do so. My goal this semester is to expand my knowledge of how to perform statistical analysis and master the tools used to perform and display such analysis. 
+
+My learning objectives for STAT 5014 are as follows:
+
+1. Learn and be comfortable developing solutions in the R language
+2. Be able to communicate data analysis effectively through the use of R Markdown
+3. Become familiar with Advanced Research Computing (ARC) for graduate research
+
+## Part B
+
+
+\begin{equation}
+f(x|\mu,\sigma^2) = \frac{1}{\sqrt{2\pi}\sigma} e^{-(x - \mu)^2 / (2\sigma^2)},\;\; -\infty \textless x \textless \infty,\;\; -\infty \textless \mu \textless \infty,\;\; \sigma \textgreater 0
+\end{equation}
+
+\begin{equation}
+f(x|\nu) = \frac{\Gamma(\frac{\nu+1}{2})}{\Gamma(\frac{\nu}{2})} \frac{1}{\sqrt{\nu\pi}} \frac{1}{(1 + (\frac{x^2}{\nu}))^{(\nu +1)/2}},\;\; -\infty \textless x \textless \infty,\;\; \nu = 1,\ldots
+\end{equation}
+
+\begin{equation}
+f(x|p) = \frac{1}{\Gamma(p/2)2^{p/2}} x^{(p/2) - 1}e^{-x/2};\;\; 0 \le x \textless \infty;\;\; p = 1, 2,\ldots
+\end{equation}
