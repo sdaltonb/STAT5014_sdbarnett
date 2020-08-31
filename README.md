@@ -1,1 +1,1 @@
-# STAT5014_sdbarnett
+# STAT_5014_Fall_2020_sdbarnett
