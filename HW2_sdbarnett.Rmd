@@ -9,22 +9,73 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Problem 3
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# a) Sensory Data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# First, I am going to pull down the dataset and save it to local storage
+# Remote data: http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat
+```{r sensory_data_save_to_local, include=TRUE, eval=TRUE, echo=TRUE}
+## sensory_data_url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
+## sensory_data <- fread(sensory_data_url, skip = 1, fill = TRUE, data.table = FALSE)
+## saveRDS(sensory_data, "dwnldd_data/sensory_data_raw.RDS")
+sensory_data <- readRDS("dwnldd_data/sensory_data_raw.RDS")
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+# The dataset has some incorrect row lengths due to indices being included in the data. We will fix these using Base R functions.
+```{r sensory_data_base_r_clean, include=TRUE, eval=TRUE, echo=TRUE}
+sensory_data_base_r <- sensory_data
+for (i in seq(from = 1, to = 30, by = 3)) {
+  sensory_data_base_r[i,] = sensory_data_base_r[i,][2:6]
+}
+sensory_data_base_r <- subset(sensory_data_base_r, select = -c(6))
+names(sensory_data_base_r) <- c("op1", "op2", "op3", "op4", "op5")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# We will attempt to clean the dataset using tidyverse functions
+```{r sensory_data_tidyverse_clear, include=TRUE, eval=TRUE, echo=TRUE}
+#sensory_data_tidyverse <- sensory_data
+#sensory_data_tidyverse <- select(sensory_data_tidyverse, -6)
+#rename(sensory_data_tidyverse, op1 = Item, op2 = 1, op3 = 2, op4 = 3, op5 = 4)
+```
+# After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data
+```{r sensory_data_display, include=TRUE, eval=TRUE, echo=FALSE}
+knitr::kable(summary(sensory_data_base_r))
+boxplot(sensory_data_base_r)
+```
+
+
+# b) Gold Medal Data
+
+## First, I will pull the data down and store it locally
+
+```{r gold_medal_data_save_to_local, include=TRUE, eval=TRUE, echo=TRUE}
+## gold_medal_data_url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat"
+## gold_medal_data <- fread(gold_medal_data_url, fill=TRUE)
+## saveRDS(gold_medal_data, "dwnldd_data/gold_medal_data_raw.RDS")
+gold_medal_data <- readRDS("dwnldd_data/gold_medal_data_raw.RDS")
+```
+
+# The dataset has some incorrect row lengths due to indices being included in the data. We will fix these using Base R functions.
+```{r gold_medal_data_clean_base_r, include=TRUE, eval=TRUE, echo=TRUE}
+gold_medal_data_base_r <- gold_medal_data
+gold_medal_data_frame <- data.frame(Year=integer(), Distance=numeric())
+for (i in seq(from = 1, to = 11, by = 2)) {
+  for (j in seq(from = 1, to = 6, by = 1)) {
+    data_row <- gold_medal_data_base_r[j,]
+    year <- data_row[[i]]
+    distance <- data_row[[i+1]]
+    gold_medal_data_frame <- rbind(gold_medal_data_frame, c(year, distance))
+  }
+}
+names(gold_medal_data_frame) <- c("Year", "Distance")
+gold_medal_data_frame <- na.omit(gold_medal_data_frame)
+gold_medal_data_frame$Year <- gold_medal_data_frame$Year + 1900
+```
+
+
+# After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data
+```{r gold_medal_data_display, include=TRUE, eval=TRUE, echo=FALSE}
+knitr::kable(summary(gold_medal_data_frame))
+plot(gold_medal_data_frame$Year, gold_medal_data_frame$Distance)
+```
