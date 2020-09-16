@@ -19,6 +19,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Problem 3
 
+Version control is essential to collaboration in any team environment, enabling engineers and analysts to work on the same code base simultaneously. Version control is also extremely helpful in understanding the history of a code base and allows all changes are to be easily reviewed and tracked. Version control is simple for the first time user but has enormous capacity for the those who invest time in understanding its full offering.
+
 # Problem 4
 
 ## a) Sensory Data
@@ -57,7 +59,7 @@ colnames(sensory_data_tidyverse) <- c("op1", "op2", "op3", "op4", "op5")
 
 ### After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data.
 ```{r sensory_data_display, include=TRUE, eval=TRUE, echo=FALSE}
-kable(summary(sensory_data_base_r))
+knitr::kable(summary(sensory_data_base_r))
 boxplot(sensory_data_base_r)
 ```
 
@@ -104,7 +106,7 @@ gold_medal_data_tidyverse_joined <- select(gold_medal_data_tidyverse_joined, !Ye
 
 ### After cleaning the Gold Medal dataset using both Base R and tidyverse functions, I am going to display the cleaned data.
 ```{r gold_medal_data_display, include=TRUE, eval=TRUE, echo=FALSE}
-kable(summary(gold_medal_data_frame))
+knitr::kable(summary(gold_medal_data_frame))
 plot(gold_medal_data_frame$Year, gold_medal_data_frame$Distance, xlab = "Year", ylab = "Distance")
 ```
 
@@ -148,7 +150,7 @@ brain_body_weight_data_tidyverse <- brain_body_weight_data_tidyverse %>% filter(
 
 ### After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data.
 ```{r brain_body_weight_data_display, include=TRUE, eval=TRUE, echo=FALSE}
-kable(summary(brain_body_weight_data_frame))
+knitr::kable(summary(brain_body_weight_data_frame))
 plot(x = brain_body_weight_data_frame$BodyWeight_kg, y = brain_body_weight_data_frame$BrainWeight_g, xlab = 'Body Weight', ylab = 'Brain Weight', log = 'xy')
 ```
 
@@ -208,6 +210,6 @@ tomato_yield_data_tidyverse <- tomato_yield_data_tidyverse %>%
 
 ### After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data
 ```{r tomato_variety_data_display, include=TRUE, eval=TRUE, echo=FALSE}
-kable(summary(tomato_yield_data_frame))
-ggplot(data = tomato_yield_data_frame, aes(factor(PlantDensity), Yield, fill = TomatoVariety)) + geom_bar(stat = "identity", width = 0.5, position = "dodge") + labs(list(x = "x", y = "count", fill = "group")) + xlab("Plant Density") + ylab("Highest Measured Yield")
+knitr::kable(summary(tomato_yield_data_frame))
+ggplot2::ggplot(data = tomato_yield_data_frame, ggplot2::aes(factor(PlantDensity), Yield, fill = TomatoVariety)) + ggplot2::geom_bar(stat = "identity", width = 0.5, position = "dodge") + ggplot2::labs(list(x = "x", y = "count", fill = "group")) + ggplot2::xlab("Plant Density") + ggplot2::ylab("Highest Measured Yield")
 ```
