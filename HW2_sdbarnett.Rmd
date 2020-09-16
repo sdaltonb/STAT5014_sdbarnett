@@ -1,20 +1,29 @@
 ---
 title: "Homework 2"
 author: "Steven Barnett"
-date: "9/10/2020"
+date: "9/15/2020"
 output: pdf_document
 ---
+
+```{r load_packages, include=FALSE}
+library(knitr)
+library(ggplot2)
+library(tidyverse)
+library(stringr)
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Problem 3
 
-# a) Sensory Data
+# Problem 3
 
-# First, I am going to pull down the dataset and save it to local storage
-# Remote data: http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat
+# Problem 4
+
+## a) Sensory Data
+
+### First, I am going to pull down the dataset and save it to local storage.
 ```{r sensory_data_save_to_local, include=TRUE, eval=TRUE, echo=TRUE}
 ## sensory_data_url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
 ## sensory_data <- fread(sensory_data_url, skip = 1, fill = TRUE, data.table = FALSE)
@@ -22,33 +31,39 @@ knitr::opts_chunk$set(echo = TRUE)
 sensory_data <- readRDS("dwnldd_data/sensory_data_raw.RDS")
 ```
 
-# The dataset has some incorrect row lengths due to indices being included in the data. We will fix these using Base R functions.
+### The dataset has some incorrect row lengths due to indices being included in the data. We will fix these using Base R functions.
 ```{r sensory_data_base_r_clean, include=TRUE, eval=TRUE, echo=TRUE}
 sensory_data_base_r <- sensory_data
+# Loop through each row that is too long and remove the first entry
 for (i in seq(from = 1, to = 30, by = 3)) {
   sensory_data_base_r[i,] = sensory_data_base_r[i,][2:6]
 }
+# Remove the sixth column that is full of NA
 sensory_data_base_r <- subset(sensory_data_base_r, select = -c(6))
 names(sensory_data_base_r) <- c("op1", "op2", "op3", "op4", "op5")
 ```
 
-# We will attempt to clean the dataset using tidyverse functions
-```{r sensory_data_tidyverse_clear, include=TRUE, eval=TRUE, echo=TRUE}
-#sensory_data_tidyverse <- sensory_data
-#sensory_data_tidyverse <- select(sensory_data_tidyverse, -6)
-#rename(sensory_data_tidyverse, op1 = Item, op2 = 1, op3 = 2, op4 = 3, op5 = 4)
+### Now that we have cleaned the sensory data set with Base R functions, we will attempt to do a similar cleaning with tidyverse functions.
+```{r sensory_data_tidyverse_clean, include=TRUE, eval=TRUE, echo=TRUE}
+sensory_data_tidyverse <- sensory_data
+# Create data set of rows with extra index
+jagged_data <- select(filter(sensory_data_tidyverse, !is.na(`5`)), !Item)
+# Create data set of rows without extra index
+unjagged_data <- select(filter(sensory_data_tidyverse, is.na(`5`)), !`5`)
+colnames(unjagged_data) <- colnames(sensory_data_tidyverse)[2:6]
+sensory_data_tidyverse <- union(jagged_data, unjagged_data)
+colnames(sensory_data_tidyverse) <- c("op1", "op2", "op3", "op4", "op5")
 ```
-# After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data
+
+### After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data.
 ```{r sensory_data_display, include=TRUE, eval=TRUE, echo=FALSE}
-knitr::kable(summary(sensory_data_base_r))
+kable(summary(sensory_data_base_r))
 boxplot(sensory_data_base_r)
 ```
 
+## b) Gold Medal Data
 
-# b) Gold Medal Data
-
-## First, I will pull the data down and store it locally
-
+### First, I will pull the data down and store it locally.
 ```{r gold_medal_data_save_to_local, include=TRUE, eval=TRUE, echo=TRUE}
 ## gold_medal_data_url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat"
 ## gold_medal_data <- fread(gold_medal_data_url, fill=TRUE)
@@ -56,10 +71,12 @@ boxplot(sensory_data_base_r)
 gold_medal_data <- readRDS("dwnldd_data/gold_medal_data_raw.RDS")
 ```
 
-# The dataset has some incorrect row lengths due to indices being included in the data. We will fix these using Base R functions.
+### The data set contains values for two columns, but the values are spread across 8 columns, along with some empty values. We will fix these using Base R functions.
 ```{r gold_medal_data_clean_base_r, include=TRUE, eval=TRUE, echo=TRUE}
 gold_medal_data_base_r <- gold_medal_data
+## Create empty data frame to fill
 gold_medal_data_frame <- data.frame(Year=integer(), Distance=numeric())
+## Loop through data set by every other column and fill data frame with Year and Distance values
 for (i in seq(from = 1, to = 11, by = 2)) {
   for (j in seq(from = 1, to = 6, by = 1)) {
     data_row <- gold_medal_data_base_r[j,]
@@ -70,12 +87,127 @@ for (i in seq(from = 1, to = 11, by = 2)) {
 }
 names(gold_medal_data_frame) <- c("Year", "Distance")
 gold_medal_data_frame <- na.omit(gold_medal_data_frame)
+## Adjust year values to reflect actual year and not difference from 1900
 gold_medal_data_frame$Year <- gold_medal_data_frame$Year + 1900
 ```
 
+### We will now attempt to clean the data set in a similar fashion using tidyverse functions.
+```{r gold_medal_data_tidyverse_clean, include=TRUE, eval=TRUE, echo=TRUE}
+gold_medal_data_tidyverse <- gold_medal_data_base_r
+colnames(gold_medal_data_tidyverse) <- c(rep(c("Year_diff", "Distance"), 6))
+gold_medal_data_tidyverse_joined <- union(select(gold_medal_data_tidyverse, 1:2), select(gold_medal_data_tidyverse, 3:4))
+gold_medal_data_tidyverse_joined <- union(gold_medal_data_tidyverse_joined, select(gold_medal_data_tidyverse, 5:6))
+gold_medal_data_tidyverse_joined <- union(gold_medal_data_tidyverse_joined, select(gold_medal_data_tidyverse, 7:8))
+gold_medal_data_tidyverse_joined <- mutate(gold_medal_data_tidyverse_joined, Year = Year_diff + 1900)
+gold_medal_data_tidyverse_joined <- select(gold_medal_data_tidyverse_joined, !Year_diff)
+```
 
-# After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data
+### After cleaning the Gold Medal dataset using both Base R and tidyverse functions, I am going to display the cleaned data.
 ```{r gold_medal_data_display, include=TRUE, eval=TRUE, echo=FALSE}
-knitr::kable(summary(gold_medal_data_frame))
-plot(gold_medal_data_frame$Year, gold_medal_data_frame$Distance)
+kable(summary(gold_medal_data_frame))
+plot(gold_medal_data_frame$Year, gold_medal_data_frame$Distance, xlab = "Year", ylab = "Distance")
+```
+
+
+## c) Brain weight and body weight data
+
+### First, I am going to pull down the dataset and save it to local storage.
+```{r brain_body_weight_data_save_to_local, include=TRUE, eval=TRUE, echo=TRUE}
+## brain_body_weight_url <- "https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BrainandBodyWeight.dat"
+## brain_body_weight_data <- fread(brain_body_weight_url, skip = 1, fill = TRUE, data.table = FALSE)
+## saveRDS(brain_body_weight_data, "dwnldd_data/brain_body_weight_data_raw.RDS")
+brain_body_weight_data <- readRDS("dwnldd_data/brain_body_weight_data_raw.RDS")
+```
+
+### Similar to the Gold Medal data set, the data is spread across multiple columns, but should be reduced to just two columns. We will initially fix these using Base R functions.
+```{r brain_body_weight_base_r_clean, include=TRUE, eval=TRUE, echo=TRUE}
+brain_body_weight_data_base_r <- brain_body_weight_data
+## Create empty data frame to fill with data from untidy data
+brain_body_weight_data_frame <- data.frame(BrainWeight=numeric(), BodyWeight=numeric())
+## Loop through every other column and iterate through the rows, filling the empty data frame
+for (i in seq(from = 1, to = 5, by = 2)) {
+  for (j in seq(from = 1, to = 21, by = 1)) {
+    data_row <- brain_body_weight_data_base_r[j,]
+    body_weight <- data_row[[i]]
+    brain_weight <- data_row[[i+1]]
+    brain_body_weight_data_frame <- rbind(brain_body_weight_data_frame, c(body_weight, brain_weight))
+  }
+}
+brain_body_weight_data_frame <- na.omit(brain_body_weight_data_frame)
+names(brain_body_weight_data_frame) <- c("BodyWeight_kg", "BrainWeight_g")
+```
+
+### Now we will attempt to clean the data set using tidyverse functions.
+```{r brain_body_weight_data_tidyverse_clean, include=TRUE, eval=TRUE, echo=TRUE}
+brain_body_weight_data_tidyverse <- brain_body_weight_data
+colnames(brain_body_weight_data_tidyverse) <- c(rep(c("BodyWeight_kg", "BrainWeight_g"), 3))
+## Split the data into column pairs and then rejoin as a data frame with two columns
+brain_body_weight_data_tidyverse <- union(union(select(brain_body_weight_data_tidyverse, 1:2), select(brain_body_weight_data_tidyverse, 3:4)), select(brain_body_weight_data_tidyverse, 5:6))
+brain_body_weight_data_tidyverse <- brain_body_weight_data_tidyverse %>% filter(!is.na(BodyWeight_kg))
+```
+
+### After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data.
+```{r brain_body_weight_data_display, include=TRUE, eval=TRUE, echo=FALSE}
+kable(summary(brain_body_weight_data_frame))
+plot(x = brain_body_weight_data_frame$BodyWeight_kg, y = brain_body_weight_data_frame$BrainWeight_g, xlab = 'Body Weight', ylab = 'Brain Weight', log = 'xy')
+```
+
+## d) Tomato Yield data
+
+### First, I am going to pull down the dataset and save it to local storage.
+```{r tomato_yield_data_save_to_local, include=TRUE, eval=TRUE, echo=TRUE}
+##tomato_yield_url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/tomato.dat"
+##tomato_yield_data <- fread(tomato_yield_url, skip = 1, fill = TRUE, data.table = FALSE)
+##saveRDS(tomato_yield_data, "dwnldd_data/tomato_yield_data_raw.RDS")
+tomato_yield_data <- readRDS("dwnldd_data/tomato_yield_data_raw.RDS")
+```
+
+### This data set has data in the first row as column names and has multiple values within one entry. We will fix this untidy data using Base R functions.
+```{r tomato_yield_base_r_clean, include=TRUE, eval=TRUE, echo=TRUE}
+tomato_yield_data_base_r <- tomato_yield_data
+## Create empty data frame to fill with tidy data
+tomato_yield_data_frame <- data.frame(TomatoVariety=character(), PlantDensity=character(), Yield=character())
+## Loop through the second two colums that contain yield measurements
+for (i in seq(from = 2, to = 3)) {
+  for (j in seq(from = 2, to = 4)) {
+    data_row <- tomato_yield_data_base_r[i,]
+    tomato_yields <- data_row[[j]]
+    ## Split the yield values by comma
+    split_yields <- str_split(tomato_yields, ',')[[1]]
+    ## Store plant variety taht should be part of every observation
+    tomato_variety <- data_row[[1]]
+    ## Store plant density that will be used as a column value instead of a "column name"
+    plant_density <- tomato_yield_data_base_r[1,][[j - 1]]
+    for (yield in split_yields) {
+      ## Account for empty yields that result from a trailing comma in the data
+      if (yield != "") {
+        tomato_yield_data_frame <- rbind(tomato_yield_data_frame, c(tomato_variety, plant_density, yield))
+      }
+    }
+  }
+}
+names(tomato_yield_data_frame) <- c("TomatoVariety", "PlantDensity", "Yield")
+tomato_yield_data_frame$PlantDensity <- as.integer(tomato_yield_data_frame$PlantDensity)
+tomato_yield_data_frame$Yield <- as.numeric(tomato_yield_data_frame$Yield)
+```
+
+### Now we will clean this dataset using tidyverse functions
+```{r tomato_yield_data_tidyverse_clear, include=TRUE, eval=TRUE, echo=TRUE}
+tomato_yield_data_tidyverse <- tomato_yield_data
+colnames(tomato_yield_data_tidyverse) <- c("TomatoVariety", tomato_yield_data_tidyverse[1,1:3])
+tomato_yield_data_tidyverse <- tomato_yield_data_tidyverse[-1,]
+tomato_yield_data_tidyverse <- tomato_yield_data_tidyverse %>%
+  gather(key = "PlantDensity", value = "Yield", 2, 3, 4) %>%
+  mutate(Yield_clean = gsub(",*$", "", Yield)) %>%
+  select(!Yield) %>%  
+  separate(Yield_clean, into = c("Yield1", "Yield2", "Yield3"), sep = ",") %>% 
+  gather(key = "to_remove", value = "Yield", 3, 4, 5) %>%
+  select(!to_remove) %>%
+  arrange(TomatoVariety, PlantDensity)
+```
+
+### After cleaning the dataset using Base R and tidyverse functions, I am going to display the cleaned data
+```{r tomato_variety_data_display, include=TRUE, eval=TRUE, echo=FALSE}
+kable(summary(tomato_yield_data_frame))
+ggplot(data = tomato_yield_data_frame, aes(factor(PlantDensity), Yield, fill = TomatoVariety)) + geom_bar(stat = "identity", width = 0.5, position = "dodge") + labs(list(x = "x", y = "count", fill = "group")) + xlab("Plant Density") + ylab("Highest Measured Yield")
 ```
