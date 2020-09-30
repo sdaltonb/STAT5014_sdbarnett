@@ -163,6 +163,7 @@ while (result - exact_integral > 1e-6) {
 }
 colnames(riemann_results) <- c("Attempt", "Slice_Width", "Approximation", 
                                "Exact Integral")
+riemann_results
 ```
 
 ## Problem 7
@@ -253,8 +254,9 @@ sst_matrix <- function(y, mean_y) {
   return(sum_squares_matrix)
 }
 
-mean_y <- mean(y)
-results <- microbenchmark::microbenchmark(sst_for_loop(y, mean_y), 
-                                          sst_matrix(y, mean_y), times = 100)
+mean_y_for <- mean(y)
+mean_y_matrix <- matrix(rep(mean(y), 100))
+results <- microbenchmark::microbenchmark(sst_for_loop(y, mean_y_for), 
+                                          sst_matrix(y, mean_y_matrix), times = 100)
 results
 ```
